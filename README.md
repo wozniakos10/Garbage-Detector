@@ -1,50 +1,53 @@
-# Welcome to your Expo app 👋
+# GarbageDetector
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+GarbageDetector is a small mobile app that classifies waste types (glass, paper, plastic, mixed). It is built with Expo and React Native.
 
-## Get started
+## Requirements
+- Node.js 18+
+- npm or yarn
+- Expo CLI (bundled with `npx expo`)
+- For native builds: Xcode 15+ on macOS for iOS, Android SDK/platform-tools for Android
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+## Run on your computer (local dev server)
 ```bash
-npm run reset-project
+npm install        # install dependencies
+npx expo start     # start the Expo dev server
+```
+Open the web UI from the terminal link to choose web, Android, or iOS simulators, or scan the QR code with a device.
+
+## Run on Android device
+1. Install Expo Go from Google Play.
+2. Connect the phone and computer to the same network (or start with a tunnel: `npx expo start --tunnel`).
+3. Run `npx expo start` and scan the QR code in Expo Go to load the app.
+
+### Build/install a native Android app (APK/AAB)
+```bash
+npm install -g eas-cli
+eas login
+eas build:configure
+eas build --platform android --profile preview   # cloud build
+```
+Download the produced artifact link to your device and install (enable installs from unknown sources if using APK).
+
+## Run on iOS device
+1. On macOS, install Xcode 15+ and open it once to finish setup.
+2. Install Expo Go from the App Store on your iPhone.
+3. Run `npx expo start` and scan the QR code with the Camera app (iOS will open Expo Go and load the project).
+
+### Build/install a native iOS app
+Requires macOS with Xcode and an Apple ID.
+```bash
+npm install -g eas-cli
+eas login
+eas build:configure
+eas build --platform ios --profile preview
+```
+Download the `.ipa` from the build link and install via TestFlight or Xcode’s Devices window. For local builds instead of cloud: `npx expo prebuild --platform ios` then open `ios/*.xcworkspace` and run on a connected device with automatic signing enabled.
+
+## Useful commands
+```bash
+npx expo start -c      # clear cache and start
+npx expo run:android   # local Android build & install (requires Android SDK)
+npx expo run:ios       # local iOS build & install (requires Xcode)
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
