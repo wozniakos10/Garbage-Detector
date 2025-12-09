@@ -2,9 +2,10 @@ import CameraScreen from '@/components/CameraScreen';
 import HistoryView from '@/components/HistoryView';
 import HomeScreen from '@/components/HomeScreen';
 import ResultView from '@/components/ResultView';
+import { imageToTensor } from '@/services/imageUtils';
 import { predictionService } from '@/services/predictionService';
 import { HistoryItem, Prediction } from '@/types';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet } from 'react-native';
 
 type Screen = 'home' | 'camera' | 'result' | 'history';
@@ -16,29 +17,38 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  const mockPredict = async () => {
+useEffect(() => {
+  (async () => {
+    await predictionService.loadModel();
+  })();
+}, []);
+
+  const runPrediction = async () => {
+    if (!photo) return;
     setLoading(true);
+
     try {
-      // Get prediction from service (mocked random)
-      const result = await predictionService.predict();
+      const tensor = await imageToTensor(photo); // ONNX tensor
+      const result = await predictionService.predict(tensor);
 
       setPrediction({
         label: result.label,
         confidence: result.confidence,
-        timestamp: new Date().toLocaleString('pl-PL')
+        timestamp: new Date().toLocaleString('pl-PL'),
       });
-    } catch (error) {
-      console.error('Prediction error:', error);
+    } catch (e) {
+      console.error("Prediction error", e);
     } finally {
       setLoading(false);
     }
   };
 
 
+
   const handlePhotoTaken = (uri: string) => {
     setPhoto(uri);
     setCurrentScreen('result');
-    mockPredict();
+    runPrediction();
   };
 
   const resetApp = () => {
