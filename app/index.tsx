@@ -2,10 +2,10 @@ import CameraScreen from '@/components/CameraScreen';
 import HistoryView from '@/components/HistoryView';
 import HomeScreen from '@/components/HomeScreen';
 import ResultView from '@/components/ResultView';
-import { predictionService } from '@/services/predictionService';
+import { useYoloDetection } from '@/hooks/useYoloDetection';
 import { HistoryItem, Prediction } from '@/types';
 import { useState } from 'react';
-import { Alert, SafeAreaView, StyleSheet } from 'react-native';
+import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
 
 type Screen = 'home' | 'camera' | 'result' | 'history';
 
@@ -16,11 +16,13 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  const mockPredict = async () => {
+  // Hook YOLO
+  const yolo = useYoloDetection();
+
+  const mockPredict = async (imageUri: string) => {
     setLoading(true);
     try {
-      // Get prediction from service (mocked random)
-      const result = await predictionService.predict();
+      const result = await yolo.detect(imageUri);
 
       setPrediction({
         label: result.label,
@@ -29,16 +31,31 @@ export default function App() {
       });
     } catch (error) {
       console.error('Prediction error:', error);
+      Alert.alert('Błąd', String(error));
     } finally {
       setLoading(false);
     }
   };
 
+  // Pokaż loader podczas ładowania modelu
+  if (!yolo.isReady) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color="#2196F3" />
+          <Text style={styles.loaderText}>
+            Ładowanie modelu YOLO... {(yolo.downloadProgress * 100).toFixed(0)}%
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
 
   const handlePhotoTaken = (uri: string) => {
     setPhoto(uri);
     setCurrentScreen('result');
-    mockPredict();
+    mockPredict(uri);
   };
 
   const resetApp = () => {
@@ -130,5 +147,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loaderText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
   },
 });

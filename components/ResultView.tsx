@@ -1,4 +1,3 @@
-import { CLASSES_INFO } from '@/constants/wasteClasses';
 import { Prediction } from '@/types';
 import { useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -43,66 +42,46 @@ export default function ResultView({
                         </View>
                     ) : prediction ? (
                         <>
-                            {(() => {
-                                const classInfo = CLASSES_INFO[prediction.label];
-                                return (
-                                    <>
-                                        <View style={styles.mainResult}>
-                                            <Text style={styles.iconLarge}>{classInfo.icon}</Text>
-                                            <Text style={styles.labelTitle}>Wykryto:</Text>
-                                            <Text style={styles.labelText}>{prediction.label}</Text>
-                                            <Text
-                                                style={[
-                                                    styles.confidenceText,
-                                                    { color: classInfo.color }
-                                                ]}
-                                            >
-                                                Pewność: {(parseFloat(prediction.confidence.toString()) * 100).toFixed(0)}%
-                                            </Text>
-                                        </View>
+                            <View style={styles.mainResult}>
+                                <Text style={styles.iconLarge}>🤖</Text>
+                                <Text style={styles.labelTitle}>YOLO wykrył:</Text>
+                                <Text style={styles.labelText}>{prediction.label}</Text>
+                                <Text style={[styles.confidenceText, { color: '#2196F3' }]}>
+                                    Pewność: {(parseFloat(prediction.confidence.toString()) * 100).toFixed(1)}%
+                                </Text>
+                            </View>
 
-                                        <View style={styles.infoBox}>
-                                            <Text style={styles.infoTitle}>📍 Gdzie wyrzucić?</Text>
-                                            <View style={[styles.binBadge, { backgroundColor: classInfo.color }]}>
-                                                <Text style={styles.binText}>{classInfo.bin}</Text>
-                                            </View>
-                                        </View>
+                            <View style={styles.infoBox}>
+                                <Text style={styles.infoTitle}>ℹ️ Info</Text>
+                                <Text style={styles.infoText}>
+                                    To jest surowy wynik z modelu YOLO (COCO dataset).
+                                    {'\n'}Klasa: {prediction.label}
+                                    {'\n'}Timestamp: {prediction.timestamp}
+                                </Text>
+                            </View>
 
-                                        <View style={styles.infoBox}>
-                                            <Text style={styles.infoTitle}>💡 Wskazówki</Text>
-                                            <Text style={styles.infoText}>{classInfo.tips}</Text>
-                                        </View>
+                            <View style={styles.actionButtons}>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.saveButton]}
+                                    onPress={onSave}
+                                >
+                                    <Text style={styles.actionButtonText}>💾 Zapisz</Text>
+                                </TouchableOpacity>
 
-                                        <View style={styles.infoBox}>
-                                            <Text style={styles.infoTitle}>🌍 Wiedza ekologiczna</Text>
-                                            <Text style={styles.infoText}>{classInfo.recyclingTime}</Text>
-                                        </View>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.historyButton]}
+                                    onPress={() => {
+                                        onReset();
+                                        onShowHistory();
+                                    }}
+                                >
+                                    <Text style={styles.actionButtonText}>📋 Historia ({historyCount})</Text>
+                                </TouchableOpacity>
+                            </View>
 
-                                        <View style={styles.actionButtons}>
-                                            <TouchableOpacity
-                                                style={[styles.actionButton, styles.saveButton]}
-                                                onPress={onSave}
-                                            >
-                                                <Text style={styles.actionButtonText}>💾 Zapisz</Text>
-                                            </TouchableOpacity>
-
-                                            <TouchableOpacity
-                                                style={[styles.actionButton, styles.historyButton]}
-                                                onPress={() => {
-                                                    onReset();
-                                                    onShowHistory();
-                                                }}
-                                            >
-                                                <Text style={styles.actionButtonText}>📋 Historia ({historyCount})</Text>
-                                            </TouchableOpacity>
-                                        </View>
-
-                                        <TouchableOpacity style={styles.retryButton} onPress={onReset}>
-                                            <Text style={styles.retryButtonText}>📸 Skanuj ponownie</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                );
-                            })()}
+                            <TouchableOpacity style={styles.retryButton} onPress={onReset}>
+                                <Text style={styles.retryButtonText}>📸 Skanuj ponownie</Text>
+                            </TouchableOpacity>
                         </>
                     ) : null}
                 </View>
@@ -113,7 +92,7 @@ export default function ResultView({
                 photoUri={photo}
                 onClose={() => setShowPreview(false)}
             />
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
