@@ -24,6 +24,10 @@ export default function App() {
     try {
       const result = await yolo.detect(imageUri);
 
+      if (!result) {
+        throw new Error('Model nie jest jeszcze gotowy');
+      }
+
       setPrediction({
         label: result.label,
         confidence: result.confidence,
@@ -31,7 +35,26 @@ export default function App() {
       });
     } catch (error) {
       console.error('Prediction error:', error);
-      Alert.alert('Błąd', String(error));
+      const errorMessage = error instanceof Error
+        ? error.message
+        : 'Wystąpił nieznany błąd podczas klasyfikacji';
+
+      setLoading(false);
+      Alert.alert(
+        'Błąd wykrywania',
+        errorMessage,
+        [
+          {
+            text: 'Spróbuj ponownie',
+            onPress: () => {
+              setPhoto(null);
+              setPrediction(null);
+              setCurrentScreen('camera');
+            }
+          }
+        ]
+      );
+      return;
     } finally {
       setLoading(false);
     }
@@ -44,7 +67,7 @@ export default function App() {
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#2196F3" />
           <Text style={styles.loaderText}>
-            Ładowanie modelu YOLO... {(yolo.downloadProgress * 100).toFixed(0)}%
+            Ładowanie modelu... {(yolo.downloadProgress * 100).toFixed(0)}%
           </Text>
         </View>
       </SafeAreaView>

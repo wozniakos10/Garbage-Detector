@@ -44,7 +44,7 @@ export default function ResultView({
                         <>
                             <View style={styles.mainResult}>
                                 <Text style={styles.iconLarge}>🤖</Text>
-                                <Text style={styles.labelTitle}>YOLO wykrył:</Text>
+                                <Text style={styles.labelTitle}>SSDLite wykrył:</Text>
                                 <Text style={styles.labelText}>{prediction.label}</Text>
                                 <Text style={[styles.confidenceText, { color: '#2196F3' }]}>
                                     Pewność: {(parseFloat(prediction.confidence.toString()) * 100).toFixed(1)}%
@@ -54,7 +54,7 @@ export default function ResultView({
                             <View style={styles.infoBox}>
                                 <Text style={styles.infoTitle}>ℹ️ Info</Text>
                                 <Text style={styles.infoText}>
-                                    To jest surowy wynik z modelu YOLO (COCO dataset).
+                                    To jest surowy wynik z modelu SSDLite (COCO dataset).
                                     {'\n'}Klasa: {prediction.label}
                                     {'\n'}Timestamp: {prediction.timestamp}
                                 </Text>
