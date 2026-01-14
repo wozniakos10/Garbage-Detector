@@ -4,10 +4,7 @@ import * as jpeg from 'jpeg-js';
 import { useEffect } from 'react';
 import { ScalarType, useExecutorchModule } from 'react-native-executorch';
 
-const CLASSES = [
-    'biological', 'trash', 'metal', 'plastic', 'battery',
-    'glass', 'paper', 'clothes', 'cardboard', 'shoes'
-];
+import { CLASSES } from '@/constants/wasteClasses';
 
 const MODEL_INPUT_SIZE = 256;
 
@@ -64,17 +61,26 @@ export function useGarbageDetection() {
             const imageSize = MODEL_INPUT_SIZE * MODEL_INPUT_SIZE;
 
             // ImageNet normalization constants
-            const IMAGENET_MEAN = [0.485, 0.456, 0.406];
-            const IMAGENET_STD = [0.229, 0.224, 0.225];
+            const MEAN_R = 0.485;
+            const MEAN_G = 0.456;
+            const MEAN_B = 0.406;
+            const STD_R = 0.229;
+            const STD_G = 0.224;
+            const STD_B = 0.225;
 
             // Vectorized preprocessing: separate channels first
             for (let i = 0; i < imageSize; i++) {
                 const pixelIndex = i * 4; // RGBA format
 
-                // Extract and normalize to [0, 1], then apply ImageNet normalization
-                inputTensor[i] = (pixelData[pixelIndex] / 255.0 - IMAGENET_MEAN[0]) / IMAGENET_STD[0];
-                inputTensor[imageSize + i] = (pixelData[pixelIndex + 1] / 255.0 - IMAGENET_MEAN[1]) / IMAGENET_STD[1];
-                inputTensor[imageSize * 2 + i] = (pixelData[pixelIndex + 2] / 255.0 - IMAGENET_MEAN[2]) / IMAGENET_STD[2];
+                // Normalization: (value / 255.0 - mean) / std
+                // Optimized to avoid array lookups
+                const r = pixelData[pixelIndex] / 255.0;
+                const g = pixelData[pixelIndex + 1] / 255.0;
+                const b = pixelData[pixelIndex + 2] / 255.0;
+
+                inputTensor[i] = (r - MEAN_R) / STD_R;
+                inputTensor[imageSize + i] = (g - MEAN_G) / STD_G;
+                inputTensor[imageSize * 2 + i] = (b - MEAN_B) / STD_B;
             }
 
             return inputTensor;

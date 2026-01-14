@@ -20,7 +20,7 @@ export default function App() {
   // Hook model
   const model = useGarbageDetection();
 
-  const mockPredict = async (imageUri: string) => {
+  const garbagePredict = async (imageUri: string) => {
     setLoading(true);
     try {
       const result = await model.detect(imageUri);
@@ -79,7 +79,7 @@ export default function App() {
   const handlePhotoTaken = (uri: string) => {
     setPhoto(uri);
     setCurrentScreen('result');
-    mockPredict(uri);
+    garbagePredict(uri);
   };
 
   const resetApp = () => {
