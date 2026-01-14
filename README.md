@@ -108,7 +108,7 @@ For local builds, you need to set up native development environment (Android Stu
 
 **Runtime**: ExecuTorch (Meta AI framework for on-device ML)
 - **Model**: Custom trained `.pte` format (16.8 MB)
-- **Input**: 256x256 RGB images
+- **Input**: 224x224 RGB images
 - **Classes**: 10 waste categories
 - **Preprocessing**: ImageNet normalization
 - **Inference**: 100% offline (no internet required)

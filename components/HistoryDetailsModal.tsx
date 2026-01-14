@@ -70,6 +70,7 @@ export default function HistoryDetailsModal({ visible, item, onClose }: HistoryD
                                 <Text style={styles.infoTitle}>⏱️ Czas rozkładu</Text>
                                 <Text style={styles.infoText}>{wasteInfo.recyclingTime}</Text>
                             </View>
+
                         </View>
                     </ScrollView>
 
@@ -210,4 +211,5 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
     },
+
 });

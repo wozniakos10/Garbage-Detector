@@ -90,7 +90,6 @@ export default function ResultView({
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.historyButton]}
                                     onPress={() => {
-                                        onReset();
                                         onShowHistory();
                                     }}
                                 >

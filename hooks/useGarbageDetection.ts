@@ -1,17 +1,20 @@
 import { decode } from 'base64-arraybuffer';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as jpeg from 'jpeg-js';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { ScalarType, useExecutorchModule } from 'react-native-executorch';
 
 import { CLASSES } from '@/constants/wasteClasses';
+import { Image } from 'react-native';
 
-const MODEL_INPUT_SIZE = 256;
+const MODEL_INPUT_SIZE = 224;
 
 export function useGarbageDetection() {
-    const executorchModule = useExecutorchModule({
-        modelSource: require('../assets/models/model.pte')
-    });
+    const executorchModule = useExecutorchModule(
+        useMemo(() => ({
+            modelSource: require('../assets/models/model.pte')
+        }), [])
+    );
 
     useEffect(() => {
         if (executorchModule.isReady) {
@@ -22,9 +25,30 @@ export function useGarbageDetection() {
     // Getting pixels
     const getPixelData = async (imageUri: string): Promise<Uint8Array> => {
         try {
+            // 1. Get image dimensions
+            const { width, height } = await new Promise<{ width: number, height: number }>((resolve, reject) => {
+                Image.getSize(imageUri, (w, h) => resolve({ width: w, height: h }), reject);
+            });
+
+            // 2. MobileNet Preprocessing: Resize shortest edge to 256, then Center Crop 224
+            const RESIZE_TARGET = 256;
+            const scale = RESIZE_TARGET / Math.min(width, height);
+
+            const scaledWidth = Math.round(width * scale);
+            const scaledHeight = Math.round(height * scale);
+
+            const originX = (scaledWidth - MODEL_INPUT_SIZE) / 2;
+            const originY = (scaledHeight - MODEL_INPUT_SIZE) / 2;
+
+            console.log(`Resizing to ${scaledWidth}x${scaledHeight} (Shortest: ${RESIZE_TARGET})`);
+            console.log(`Cropping ${MODEL_INPUT_SIZE}x${MODEL_INPUT_SIZE} at (${originX}, ${originY})`);
+
             const manipResult = await ImageManipulator.manipulateAsync(
                 imageUri,
-                [{ resize: { width: MODEL_INPUT_SIZE, height: MODEL_INPUT_SIZE } }],
+                [
+                    { resize: { width: scaledWidth, height: scaledHeight } },
+                    { crop: { originX, originY, width: MODEL_INPUT_SIZE, height: MODEL_INPUT_SIZE } }
+                ],
                 {
                     format: ImageManipulator.SaveFormat.JPEG,
                     compress: 1, // Max quality for model
@@ -40,7 +64,8 @@ export function useGarbageDetection() {
             const arrayBuffer = decode(manipResult.base64);
 
             // Decode JPEG to raw pixel data
-            const rawImageData = jpeg.decode(arrayBuffer, { useTArray: true });
+            // Getting RGB data (3 channels) instead of RGBA
+            const rawImageData = jpeg.decode(arrayBuffer, { useTArray: true, formatAsRGBA: false });
 
             return rawImageData.data;
         } catch (e) {
@@ -70,7 +95,7 @@ export function useGarbageDetection() {
 
             // Vectorized preprocessing: separate channels first
             for (let i = 0; i < imageSize; i++) {
-                const pixelIndex = i * 4; // RGBA format
+                const pixelIndex = i * 3; // RGB format (3 bytes per pixel)
 
                 // Normalization: (value / 255.0 - mean) / std
                 // Optimized to avoid array lookups

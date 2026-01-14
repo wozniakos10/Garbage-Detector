@@ -20,6 +20,7 @@ export default function App() {
   // Hook model
   const model = useGarbageDetection();
 
+
   const garbagePredict = async (imageUri: string) => {
     setLoading(true);
     try {
@@ -119,6 +120,7 @@ export default function App() {
   };
 
   const showHistory = () => {
+    if (currentScreen === 'history') return;
     setPreviousScreen(currentScreen);
     setCurrentScreen('history');
   };
@@ -165,7 +167,12 @@ export default function App() {
     return (
       <HistoryView
         history={history}
-        onClose={() => setCurrentScreen(previousScreen)}
+        onClose={() => {
+          // Use setTimeout to ensure state update happens after touch handling
+          setTimeout(() => {
+            setCurrentScreen(previousScreen);
+          }, 0);
+        }}
         onClear={clearHistory}
       />
     );
