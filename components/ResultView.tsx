@@ -1,4 +1,4 @@
-import { CLASSES_INFO } from '@/constants/wasteClasses';
+import { CLASSES_INFO, CLASS_NAME_MAPPER } from '@/constants/wasteClasses';
 import { Prediction } from '@/types';
 import { useState } from 'react';
 import { ActivityIndicator, Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
@@ -12,6 +12,7 @@ interface ResultViewProps {
     onSave: () => void;
     onShowHistory: () => void;
     historyCount: number;
+    onGoHome: () => void;
 }
 
 export default function ResultView({
@@ -21,13 +22,24 @@ export default function ResultView({
     onReset,
     onSave,
     onShowHistory,
-    historyCount
+    historyCount,
+    onGoHome
 }: ResultViewProps) {
     const [showPreview, setShowPreview] = useState(false);
+
+    // Get waste class info
+    const wasteInfo = prediction ? CLASSES_INFO[prediction.label] : null;
+    const displayName = prediction ? CLASS_NAME_MAPPER[prediction.label] : null;
 
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView style={styles.scrollView}>
+                <View style={styles.headerButtons}>
+                    <TouchableOpacity style={styles.homeButton} onPress={onGoHome}>
+                        <Text style={styles.homeButtonText}>🏠 Menu Główne</Text>
+                    </TouchableOpacity>
+                </View>
+
                 <TouchableOpacity onPress={() => setShowPreview(true)}>
                     <Image source={{ uri: photo }} style={styles.previewImage} />
                     <View style={styles.imageOverlay}>
@@ -41,68 +53,54 @@ export default function ResultView({
                             <ActivityIndicator size="large" color="#2196F3" />
                             <Text style={styles.loadingText}>Analizowanie obrazu...</Text>
                         </View>
-                    ) : prediction ? (
+                    ) : prediction && wasteInfo && displayName ? (
                         <>
-                            {(() => {
-                                const classInfo = CLASSES_INFO[prediction.label];
-                                return (
-                                    <>
-                                        <View style={styles.mainResult}>
-                                            <Text style={styles.iconLarge}>{classInfo.icon}</Text>
-                                            <Text style={styles.labelTitle}>Wykryto:</Text>
-                                            <Text style={styles.labelText}>{prediction.label}</Text>
-                                            <Text
-                                                style={[
-                                                    styles.confidenceText,
-                                                    { color: classInfo.color }
-                                                ]}
-                                            >
-                                                Pewność: {(parseFloat(prediction.confidence.toString()) * 100).toFixed(0)}%
-                                            </Text>
-                                        </View>
+                            <View style={styles.mainResult}>
+                                <Text style={styles.iconLarge}>{wasteInfo.icon}</Text>
+                                <Text style={styles.labelTitle}>Wykryto:</Text>
+                                <Text style={styles.labelText}>{displayName}</Text>
+                                <Text style={[styles.confidenceText, { color: wasteInfo.color }]}>
+                                    Pewność: {(parseFloat(prediction.confidence.toString()) * 100).toFixed(1)}%
+                                </Text>
+                            </View>
 
-                                        <View style={styles.infoBox}>
-                                            <Text style={styles.infoTitle}>📍 Gdzie wyrzucić?</Text>
-                                            <View style={[styles.binBadge, { backgroundColor: classInfo.color }]}>
-                                                <Text style={styles.binText}>{classInfo.bin}</Text>
-                                            </View>
-                                        </View>
+                            <View style={[styles.infoBox, { borderLeftWidth: 4, borderLeftColor: wasteInfo.color }]}>
+                                <Text style={styles.infoTitle}>♻️ Gdzie wyrzucić?</Text>
+                                <Text style={[styles.binText, { color: wasteInfo.color }]}>{wasteInfo.bin}</Text>
+                            </View>
 
-                                        <View style={styles.infoBox}>
-                                            <Text style={styles.infoTitle}>💡 Wskazówki</Text>
-                                            <Text style={styles.infoText}>{classInfo.tips}</Text>
-                                        </View>
+                            <View style={styles.infoBox}>
+                                <Text style={styles.infoTitle}>💡 Wskazówki</Text>
+                                <Text style={styles.infoText}>{wasteInfo.tips}</Text>
+                            </View>
 
-                                        <View style={styles.infoBox}>
-                                            <Text style={styles.infoTitle}>🌍 Wiedza ekologiczna</Text>
-                                            <Text style={styles.infoText}>{classInfo.recyclingTime}</Text>
-                                        </View>
+                            <View style={styles.infoBox}>
+                                <Text style={styles.infoTitle}>⏱️ Czas rozkładu</Text>
+                                <Text style={styles.infoText}>{wasteInfo.recyclingTime}</Text>
+                            </View>
 
-                                        <View style={styles.actionButtons}>
-                                            <TouchableOpacity
-                                                style={[styles.actionButton, styles.saveButton]}
-                                                onPress={onSave}
-                                            >
-                                                <Text style={styles.actionButtonText}>💾 Zapisz</Text>
-                                            </TouchableOpacity>
+                            <View style={styles.actionButtons}>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.saveButton]}
+                                    onPress={onSave}
+                                >
+                                    <Text style={styles.actionButtonText}>💾 Zapisz</Text>
+                                </TouchableOpacity>
 
-                                            <TouchableOpacity
-                                                style={[styles.actionButton, styles.historyButton]}
-                                                onPress={() => {
-                                                    onReset();
-                                                    onShowHistory();
-                                                }}
-                                            >
-                                                <Text style={styles.actionButtonText}>📋 Historia ({historyCount})</Text>
-                                            </TouchableOpacity>
-                                        </View>
+                                <TouchableOpacity
+                                    style={[styles.actionButton, styles.historyButton]}
+                                    onPress={() => {
+                                        onReset();
+                                        onShowHistory();
+                                    }}
+                                >
+                                    <Text style={styles.actionButtonText}>📋 Historia ({historyCount})</Text>
+                                </TouchableOpacity>
+                            </View>
 
-                                        <TouchableOpacity style={styles.retryButton} onPress={onReset}>
-                                            <Text style={styles.retryButtonText}>📸 Skanuj ponownie</Text>
-                                        </TouchableOpacity>
-                                    </>
-                                );
-                            })()}
+                            <TouchableOpacity style={styles.retryButton} onPress={onReset}>
+                                <Text style={styles.retryButtonText}>📸 Skanuj ponownie</Text>
+                            </TouchableOpacity>
                         </>
                     ) : null}
                 </View>
@@ -113,7 +111,7 @@ export default function ResultView({
                 photoUri={photo}
                 onClose={() => setShowPreview(false)}
             />
-        </SafeAreaView>
+        </SafeAreaView >
     );
 }
 
@@ -121,6 +119,25 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#f5f5f5',
+    },
+    headerButtons: {
+        position: 'absolute',
+        top: 20,
+        left: 20,
+        zIndex: 10,
+    },
+    homeButton: {
+        backgroundColor: 'rgba(33, 150, 243, 0.9)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    homeButtonText: {
+        color: 'white',
+        fontSize: 14,
+        fontWeight: 'bold',
     },
     scrollView: {
         flex: 1,
@@ -202,16 +219,10 @@ const styles = StyleSheet.create({
         color: '#666',
         lineHeight: 20,
     },
-    binBadge: {
-        paddingVertical: 10,
-        paddingHorizontal: 15,
-        borderRadius: 10,
-        alignSelf: 'flex-start',
-    },
     binText: {
-        color: 'white',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
+        marginTop: 5,
     },
     actionButtons: {
         flexDirection: 'row',

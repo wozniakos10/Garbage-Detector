@@ -6,9 +6,10 @@ interface CameraScreenProps {
     onPhotoTaken: (uri: string) => void;
     historyCount: number;
     onShowHistory: () => void;
+    onGoHome: () => void;
 }
 
-export default function CameraScreen({ onPhotoTaken, historyCount, onShowHistory }: CameraScreenProps) {
+export default function CameraScreen({ onPhotoTaken, historyCount, onShowHistory, onGoHome }: CameraScreenProps) {
     const [permission, requestPermission] = useCameraPermissions();
     const cameraRef = useRef(null);
 
@@ -43,6 +44,10 @@ export default function CameraScreen({ onPhotoTaken, historyCount, onShowHistory
     return (
         <View style={styles.container}>
             <StatusBar barStyle="light-content" />
+
+            <TouchableOpacity style={styles.homeButtonTop} onPress={onGoHome}>
+                <Text style={styles.homeButtonText}>🏠 Menu Główne</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity style={styles.historyButtonTop} onPress={onShowHistory}>
                 <Text style={styles.historyButtonTopText}>📋 Historia</Text>
@@ -107,7 +112,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 10,
         borderRadius: 20,
-        marginTop: 20,
+        marginTop: 100, // Increased margin to avoid overlap with top buttons
     },
     instructionText: {
         color: 'white',
@@ -159,6 +164,23 @@ const styles = StyleSheet.create({
     historyBadgeText: {
         color: 'white',
         fontSize: 12,
+        fontWeight: 'bold',
+    },
+    homeButtonTop: {
+        position: 'absolute',
+        top: 50,
+        left: 20,
+        backgroundColor: 'rgba(33, 150, 243, 0.9)',
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+        borderRadius: 20,
+        zIndex: 10,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    homeButtonText: {
+        color: 'white',
+        fontSize: 14,
         fontWeight: 'bold',
     },
 });
