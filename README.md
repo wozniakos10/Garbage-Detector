@@ -17,7 +17,6 @@ npm install
 # Start development server
 npx expo start
 
-# Scan QR code with Expo Go app (iOS/Android) or run in browser
 ```
 
 ## Project Structure
@@ -59,7 +58,7 @@ eas login
 eas build:configure
 
 # 4. Build APK for testing
-npm run build:android
+eas build --platform android --profile preview
 
 # 5. Download .apk from link and install on device
 ```
@@ -104,9 +103,6 @@ For local builds, you need to set up native development environment (Android Stu
 - **preview** - APK for testing (installable directly)
 - **production** - Production build
 
-**APK vs AAB:**
-- **APK** - Direct install file (used in this project)
-- **AAB** - Google Play Store format (smaller size)
 
 ## ML Model Details
 
@@ -138,39 +134,15 @@ This repository contains implementations for:
 
 ```bash
 npm start              # Dev server
-npm run android        # Android emulator
-npm run ios            # iOS simulator
-npm run web            # Web version
-npm run lint           # Lint code
+npx expo run android   # Android emulator
+npx expo run ios       # iOS simulator
 ```
 
-## Deployment
-
-**Android:**
-- Direct APK distribution: `npm run build:android`
-- Google Play Store: Change to `"buildType": "aab"` in `eas.json`, then `eas submit`
-
-**iOS:**
-- TestFlight/App Store: `eas build --platform ios` then `eas submit`
 
 ## Documentation
 
-- [BUILD_ANDROID.md](BUILD_ANDROID.md) - Detailed Android build guide (Polish)
 - [Expo Docs](https://docs.expo.dev/)
 - [EAS Build Guide](https://docs.expo.dev/build/introduction/)
 - [ExecuTorch](https://pytorch.org/executorch/)
 
-## FAQ
 
-**Q: App size?**
-A: ~40-50 MB (16.8 MB model + 25 MB framework)
-
-**Q: Works offline?**
-A: Yes, ML model is bundled in the app
-
-**Q: Need Expo account?**
-A: Only for EAS builds (free account works)
-
-## License
-
-MIT
