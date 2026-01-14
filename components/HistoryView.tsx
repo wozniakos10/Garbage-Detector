@@ -1,8 +1,8 @@
-import { CLASSES_INFO } from '@/constants/wasteClasses';
+import { CLASSES_INFO, CLASS_NAME_MAPPER } from '@/constants/wasteClasses';
 import { HistoryItem } from '@/types';
 import { useState } from 'react';
 import { Image, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import PhotoPreviewModal from './PhotoPreviewModal';
+import HistoryDetailsModal from './HistoryDetailsModal';
 
 interface HistoryViewProps {
     history: HistoryItem[];
@@ -11,7 +11,7 @@ interface HistoryViewProps {
 }
 
 export default function HistoryView({ history, onClose, onClear }: HistoryViewProps) {
-    const [previewPhoto, setPreviewPhoto] = useState<string | null>(null);
+    const [selectedItem, setSelectedItem] = useState<HistoryItem | null>(null);
 
     return (
         <SafeAreaView style={styles.container}>
@@ -38,16 +38,17 @@ export default function HistoryView({ history, onClose, onClear }: HistoryViewPr
                 ) : (
                     history.map((item) => {
                         const info = CLASSES_INFO[item.label];
+                        const displayName = CLASS_NAME_MAPPER[item.label];
                         return (
                             <TouchableOpacity
                                 key={item.id}
                                 style={styles.item}
-                                onPress={() => setPreviewPhoto(item.photo)}
+                                onPress={() => setSelectedItem(item)}
                             >
                                 <Image source={{ uri: item.photo }} style={styles.image} />
                                 <View style={styles.itemContent}>
                                     <Text style={styles.itemLabel}>
-                                        {info.icon} {item.label}
+                                        {info.icon} {displayName}
                                     </Text>
                                     <Text style={styles.itemConfidence}>
                                         Pewność: {(item.confidence * 100).toFixed(0)}%
@@ -60,10 +61,10 @@ export default function HistoryView({ history, onClose, onClear }: HistoryViewPr
                 )}
             </ScrollView>
 
-            <PhotoPreviewModal
-                visible={!!previewPhoto}
-                photoUri={previewPhoto}
-                onClose={() => setPreviewPhoto(null)}
+            <HistoryDetailsModal
+                visible={!!selectedItem}
+                item={selectedItem}
+                onClose={() => setSelectedItem(null)}
             />
         </SafeAreaView>
     );

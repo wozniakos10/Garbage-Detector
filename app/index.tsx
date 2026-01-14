@@ -2,7 +2,7 @@ import CameraScreen from '@/components/CameraScreen';
 import HistoryView from '@/components/HistoryView';
 import HomeScreen from '@/components/HomeScreen';
 import ResultView from '@/components/ResultView';
-import { useYoloDetection } from '@/hooks/useYoloDetection';
+import { useGarbageDetection } from '@/hooks/useGarbageDetection';
 import { HistoryItem, Prediction } from '@/types';
 import { useState } from 'react';
 import { ActivityIndicator, Alert, SafeAreaView, StyleSheet, Text, View } from 'react-native';
@@ -11,18 +11,19 @@ type Screen = 'home' | 'camera' | 'result' | 'history';
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home');
+  const [previousScreen, setPreviousScreen] = useState<Screen>('home');
   const [photo, setPhoto] = useState<string | null>(null);
   const [prediction, setPrediction] = useState<Prediction | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<HistoryItem[]>([]);
 
-  // Hook YOLO
-  const yolo = useYoloDetection();
+  // Hook model
+  const model = useGarbageDetection();
 
   const mockPredict = async (imageUri: string) => {
     setLoading(true);
     try {
-      const result = await yolo.detect(imageUri);
+      const result = await model.detect(imageUri);
 
       if (!result) {
         throw new Error('Model nie jest jeszcze gotowy');
@@ -60,14 +61,14 @@ export default function App() {
     }
   };
 
-  // Pokaż loader podczas ładowania modelu
-  if (!yolo.isReady) {
+  // Show loader
+  if (!model.isReady) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loaderContainer}>
           <ActivityIndicator size="large" color="#2196F3" />
           <Text style={styles.loaderText}>
-            Ładowanie modelu... {(yolo.downloadProgress * 100).toFixed(0)}%
+            Ładowanie modelu... {(model.downloadProgress * 100).toFixed(0)}%
           </Text>
         </View>
       </SafeAreaView>
@@ -117,12 +118,17 @@ export default function App() {
     );
   };
 
+  const showHistory = () => {
+    setPreviousScreen(currentScreen);
+    setCurrentScreen('history');
+  };
+
   if (currentScreen === 'home') {
     return (
       <SafeAreaView style={styles.container}>
         <HomeScreen
           onStartScanning={() => setCurrentScreen('camera')}
-          onShowHistory={() => setCurrentScreen('history')}
+          onShowHistory={showHistory}
           historyCount={history.length}
         />
       </SafeAreaView>
@@ -134,7 +140,8 @@ export default function App() {
       <CameraScreen
         onPhotoTaken={handlePhotoTaken}
         historyCount={history.length}
-        onShowHistory={() => setCurrentScreen('history')}
+        onShowHistory={showHistory}
+        onGoHome={() => setCurrentScreen('home')}
       />
     );
   }
@@ -147,8 +154,9 @@ export default function App() {
         loading={loading}
         onReset={resetApp}
         onSave={saveToHistory}
-        onShowHistory={() => setCurrentScreen('history')}
+        onShowHistory={showHistory}
         historyCount={history.length}
+        onGoHome={() => setCurrentScreen('home')}
       />
     );
   }
@@ -157,7 +165,7 @@ export default function App() {
     return (
       <HistoryView
         history={history}
-        onClose={() => setCurrentScreen('home')}
+        onClose={() => setCurrentScreen(previousScreen)}
         onClear={clearHistory}
       />
     );
